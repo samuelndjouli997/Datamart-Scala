@@ -1,0 +1,26 @@
+# Airflow files
+airflow.cfg
+airflow.db
+unittests.cfg
+
+# Airflow logs
+logs/
+
+# Airflow plugins
+plugins/
+
+# Airflow DAGs compiled files
+airflow/dags/*.pyc
+airflow/www/*.pyc
+
+# Airflow environment-specific files
+.env
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
