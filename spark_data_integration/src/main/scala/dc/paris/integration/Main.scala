@@ -15,8 +15,8 @@ object Main extends App {
     .builder()
     .appName("Data Integration")
     .master("local[*]")
-    .config("fs.s3a.access.key", "K8GQvalX6HDodr7rwM61") // A renseigner
-    .config("fs.s3a.secret.key", "yY7FSSQG6fcMx49RHbckqzwCncFS8K3HMV2oxYRW") // A renseigner
+    .config("fs.s3a.access.key", "7D6skp7yIzatGvMuzXVL") // A renseigner
+    .config("fs.s3a.secret.key", "yeDJJZHTtC7DRpXai997n60OzrOLDtq7RfbIhCTI") // A renseigner
     .config("fs.s3a.endpoint", "http://localhost:9000/")
     .config("fs.s3a.path.style.access", "true")
     .config("fs.s3a.connection.ssl.enable", "false")
@@ -63,32 +63,39 @@ object Main extends App {
     println(s"$fileName téléchargé avec succès dans data/raw/")
   }
 
-  // Paramètres Minio
-  //  val bucketName = "nyc-taxi"
-  //  val accessKey = "K8GQvalX6HDodr7rwM61"
-  //  val secretKey = "yY7FSSQG6fcMx49RHbckqzwCncFS8K3HMV2oxYRW"
-  //  val endpointUrl = "http://localhost:9001"
-
-  // IMPORTANT : Configurer Spark pour Minio
-  //  spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
-  //  spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
-  //  spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", endpointUrl)
-  //  spark.sparkContext.hadoopConfiguration.set("fs.s3a.path.style.access", "true")
-  //  spark.sparkContext.hadoopConfiguration.set("fs.s3a.connection.ssl.enabled", "false")
-
   for (month <- months) {
     val formattedMonth = f"$month%02d"
     val fileName = s"yellow_tripdata_${year}-$formattedMonth.parquet"
-    val localFilePath = s"data/raw/$fileName"
     val s3Path = s"s3a://nyc-taxi/$fileName"
 
     try {
-      val df: DataFrame = spark.read.parquet(localFilePath)
-      df.write.mode("overwrite").parquet(s3Path)
-      println(s"Fichier $fileName uploadé avec succès vers Minio à $s3Path")
+      val df = spark.read.parquet(s3Path)
+
+      // Optionnel : tu peux sélectionner certaines colonnes ou filtrer
+      // val cleanedDf = df.select("tpep_pickup_datetime", "tpep_dropoff_datetime", "passenger_count")
+
+      // Écriture dans la base PostgreSQL
+      writeToPostgres(df, s"yellow_tripdata_${year}_$formattedMonth")
+
     } catch {
       case e: Exception =>
-        println(s"Erreur lors de l’upload de $fileName : ${e.getMessage}")
+        println(s"❌❌❌❌❌❌❌❌ Erreur pour $fileName : ${e.getMessage}")
     }
   }
+
+  def writeToPostgres(df: DataFrame, tableName: String): Unit = {
+    val jdbcUrl = "jdbc:postgresql://localhost:15432/postgres"
+    val connectionProperties = new java.util.Properties()
+    connectionProperties.setProperty("user", "postgres")
+    connectionProperties.setProperty("password", "admin")
+    connectionProperties.setProperty("driver", "org.postgresql.Driver")
+
+    df.write
+      .mode("overwrite") // ou append si tu veux ajouter à chaque fois
+      .jdbc(jdbcUrl, tableName, connectionProperties)
+
+    println(s"✅✅✅✅✅✅✅✅✅✅✅ Données écrites dans la table $tableName avec succès.")
+  }
+
+
 }
