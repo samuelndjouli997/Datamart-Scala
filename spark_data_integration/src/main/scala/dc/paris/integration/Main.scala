@@ -15,8 +15,8 @@ object Main extends App {
     .builder()
     .appName("Data Integration")
     .master("local[*]")
-    .config("fs.s3a.access.key", "7D6skp7yIzatGvMuzXVL") // A renseigner
-    .config("fs.s3a.secret.key", "yeDJJZHTtC7DRpXai997n60OzrOLDtq7RfbIhCTI") // A renseigner
+    .config("fs.s3a.access.key", "F1Wf7wrqA4QNcxUFhisl") // A renseigner
+    .config("fs.s3a.secret.key", "AgvR2F9h8EZh586wIcp5IgEIj4sBaLXnRvRuhgVj") // A renseigner
     .config("fs.s3a.endpoint", "http://localhost:9000/")
     .config("fs.s3a.path.style.access", "true")
     .config("fs.s3a.connection.ssl.enable", "false")
